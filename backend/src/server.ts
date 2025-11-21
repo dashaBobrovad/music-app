@@ -1,27 +1,27 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
+import cors from 'cors'
+import express, { Request, Response } from 'express'
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+const app = express()
+const PORT = process.env.PORT || 3001
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors())
+app.use(express.json())
 
 // Type definition for Track
 type Track = {
-  id: number;
-  title: string;
-  url: string;
-};
+  id: number
+  title: string
+  url: string
+}
 
 // Endpoint to fetch tracks from external API
 app.get('/api/tracks', async (req: Request, res: Response) => {
   try {
     // Fetch data from the external API
     // You can replace this URL with any music API you want to use
-    const response = await fetch('https://musicfun.it-incubator.app/api/tracks');
-    
+    const response = await fetch('https://musicfun.it-incubator.app/api/tracks')
+
     if (!response.ok) {
       // If the external API doesn't exist, return mock data
       const mockTracks: Track[] = [
@@ -35,14 +35,14 @@ app.get('/api/tracks', async (req: Request, res: Response) => {
           title: 'Musicfun soundtrack instrumental',
           url: 'https://musicfun.it-incubator.app/api/samurai-way-soundtrack-instrumental.mp3',
         },
-      ];
-      return res.json(mockTracks);
+      ]
+      return res.json(mockTracks)
     }
 
-    const tracks: Track[] = await response.json();
-    res.json(tracks);
+    const tracks: Track[] = await response.json()
+    res.json(tracks)
   } catch (error) {
-    console.error('Error fetching tracks:', error);
+    console.error('Error fetching tracks:', error)
     // Return mock data as fallback
     const fallbackTracks: Track[] = [
       {
@@ -55,18 +55,16 @@ app.get('/api/tracks', async (req: Request, res: Response) => {
         title: 'Musicfun soundtrack instrumental',
         url: 'https://musicfun.it-incubator.app/api/samurai-way-soundtrack-instrumental.mp3',
       },
-    ];
-    res.json(fallbackTracks);
+    ]
+    res.json(fallbackTracks)
   }
-});
+})
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok' });
-});
+  res.json({ status: 'ok' })
+})
 
 app.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
-});
-
-
+  console.log(`Backend server running on http://localhost:${PORT}`)
+})
