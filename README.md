@@ -155,7 +155,3 @@ Frontend должен использовать относительные пут
 - React компоненты: `PascalCase` (например, `PlayerBar.tsx`)
 - Hooks: `useSomething.ts`
 - Утилиты: `camelCase` (например, `formatDuration.ts`)
-
-## Лицензия
-
-MIT
