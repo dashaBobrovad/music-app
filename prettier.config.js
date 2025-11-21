@@ -9,9 +9,7 @@ export default {
     bracketSpacing: true,
     bracketSameLine: false,
     endOfLine: 'lf',
-    jsxWhitespaceSensitivity: "strict",
     plugins: [
-      'prettier-plugin-organize-imports',
+        'prettier-plugin-organize-imports',
     ],
-  }
-  
+}
