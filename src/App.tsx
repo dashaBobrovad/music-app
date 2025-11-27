@@ -1,46 +1,231 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from 'react'
 
 type Track = {
-  id: number
+  id: string
   title: string
-  url: string
+  durationMs: number
+  audioUrl: string
+  coverUrl?: string
+  genre?: string
+  artistIds: string[]
+  tagIds: string[]
+  playlistIds?: string[]
+  createdAt?: string
+  updatedAt?: string
+  lyrics?: string
+}
+
+type TracksResponse = {
+  data: Track[]
+  meta: {
+    total: number
+  }
+}
+
+type TrackDetail = Omit<Track, 'audioUrl'>
+
+type TrackResponse = {
+  data: TrackDetail
 }
 
 export function App() {
-  const [active, setActive] = useState<number | null>(null);
-  const [data, setData] = useState<Track[] | null>(null);
+  const [tracks, setTracks] = useState<Track[] | null>(null)
+  const [activeTrackId, setActiveTrackId] = useState<string | null>(null)
+  const [selectedTrack, setSelectedTrack] = useState<TrackDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/tracks')
-      .then(response => response.json())
-      .then((tracks: Track[]) => setTimeout(()=>setData(tracks), 1000))
-      .catch(error => {
-        console.error('Error fetching tracks:', error);
-        setData([]);
-      });
-  }, []);
+    const fetchTracks = async () => {
+      try {
+        const response = await fetch('/api/tracks')
+        const payload: TracksResponse = await response.json()
+        setTracks(payload.data)
+      } catch (error) {
+        console.error('Error fetching tracks:', error)
+        setTracks([])
+      }
+    }
+
+    fetchTracks()
+  }, [])
+
+  const loadTrackDetail = async (trackId: string) => {
+    setDetailLoading(true)
+    setDetailError(null)
+
+    try {
+      const response = await fetch(`/api/playlists/tracks/${trackId}`)
+
+      if (!response.ok) {
+        throw new Error('Failed to load track')
+      }
+
+      const payload: TrackResponse = await response.json()
+      setSelectedTrack(payload.data)
+    } catch (error) {
+      console.error('Error fetching track detail:', error)
+      setSelectedTrack(null)
+      setDetailError('Не удалось загрузить информацию о треке')
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  const handleSelectTrack = (trackId: string) => {
+    setActiveTrackId(trackId)
+    loadTrackDetail(trackId)
+  }
+
+  const handleResetSelection = () => {
+    setActiveTrackId(null)
+    setSelectedTrack(null)
+    setDetailError(null)
+  }
+
+  const renderTrackList = () => {
+    if (tracks === null) {
+      return <div className="text-sm text-gray-500">loading...</div>
+    }
+
+    if (tracks.length === 0) {
+      return <div className="text-sm text-gray-500">empty</div>
+    }
+
+    return (
+      <ul className="flex flex-col gap-2">
+        {tracks.map(({ id, title, audioUrl }) => {
+          const isActive = id === activeTrackId
+
+          return (
+            <li
+              key={id}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isActive}
+              aria-label={`Трек ${title}`}
+              onClick={() => handleSelectTrack(id)}
+              className={`rounded border p-3 transition focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                isActive ? 'bg-green-100' : 'bg-white hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex flex-col gap-2">
+                <span className="font-medium text-gray-900">{title}</span>
+                <audio className="w-full" src={audioUrl} controls />
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+    )
+  }
+
+  const renderTrackDetail = () => {
+    if (!activeTrackId) {
+      return <div className="text-sm text-gray-500">Выберите трек, чтобы увидеть детали</div>
+    }
+
+    if (detailLoading) {
+      return <div className="text-sm text-gray-500">Загрузка информации...</div>
+    }
+
+    if (detailError) {
+      return <div className="text-sm text-red-600">{detailError}</div>
+    }
+
+    if (!selectedTrack) {
+      return null
+    }
+
+    const { title, durationMs, coverUrl, genre, artistIds, tagIds, playlistIds, lyrics } =
+      selectedTrack
+
+    const formatDuration = (milliseconds: number) => {
+      if (!milliseconds) {
+        return '—'
+      }
+
+      const minutes = Math.floor(milliseconds / 60000)
+      const seconds = Math.floor((milliseconds % 60000) / 1000)
+
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    return (
+      <div className="space-y-3 rounded border p-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        </div>
+
+        {coverUrl && (
+          <img
+            src={coverUrl}
+            alt={`Обложка трека ${title}`}
+            className="h-40 w-full rounded object-cover"
+          />
+        )}
+
+        <div className="text-sm text-gray-700">
+          <span className="font-medium">Длительность:</span> {formatDuration(durationMs)}
+        </div>
+
+        {genre && (
+          <div className="text-sm text-gray-700">
+            <span className="font-medium">Жанр:</span> {genre}
+          </div>
+        )}
+
+        <div className="text-sm text-gray-700">
+          <span className="font-medium">Исполнители:</span>{' '}
+          {artistIds.length > 0 ? artistIds.join(', ') : '—'}
+        </div>
+
+        <div className="text-sm text-gray-700">
+          <span className="font-medium">Теги:</span> {tagIds.length > 0 ? tagIds.join(', ') : '—'}
+        </div>
+
+        {playlistIds && (
+          <div className="text-sm text-gray-700">
+            <span className="font-medium">Плейлисты:</span>{' '}
+            {playlistIds.length > 0 ? playlistIds.join(', ') : '—'}
+          </div>
+        )}
+
+        {lyrics && (
+          <div className="text-sm text-gray-700">
+            <span className="font-medium">Текст песни:</span> {lyrics}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
-    <>
-      <h1>Список треков</h1>
-      
-      {data === null && <div>loading...</div>}
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 p-4 md:flex-row">
+      <div className="w-full rounded border bg-white p-4 shadow-sm md:w-2/3">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h1 className="text-xl font-semibold text-gray-900">Список треков</h1>
 
-      {data && data?.length === 0 && <div>empty</div>}
+          <button
+            type="button"
+            onClick={handleResetSelection}
+            disabled={!activeTrackId}
+            className={`rounded px-3 py-2 text-sm font-medium transition ${
+              activeTrackId
+                ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+                : 'cursor-not-allowed bg-gray-100 text-gray-400'
+            }`}
+          >
+            Сбросить выбор
+          </button>
+        </div>
+        {renderTrackList()}
+      </div>
 
-      {data && data?.length > 0 && (
-        <ul>
-          {data?.map(({ id, title, url }) => (
-            <li key={id} onClick={() => setActive(id)} style={{ background: active === id ? "green" : ""}}>
-              <span>{title}</span>
-
-              <audio src={url} controls />
-            </li>
-          ))}
-
-          <button onClick={() => setActive(null)}>reset</button>
-        </ul>
-      )}
-    </>
+      <div className="w-full rounded border bg-white p-4 shadow-sm md:w-1/3">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Информация о треке</h2>
+        {renderTrackDetail()}
+      </div>
+    </div>
   )
 }
