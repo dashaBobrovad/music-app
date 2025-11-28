@@ -139,7 +139,7 @@ Returns current user.
 
 ## 2. Tracks
 
-### 2.1 GET /api/tracks
+### 2.1 GET /api/playlists/tracks
 Paginated list of tracks.
 
 **Auth:** Public

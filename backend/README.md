@@ -22,7 +22,7 @@ npm start
 
 ## API Endpoints
 
-- `GET /api/tracks` - Fetches tracks from the external API
+- `GET /api/playlists/tracks` - Fetches tracks from the external API
 - `GET /health` - Health check endpoint
 
 The server runs on port 3001 by default (or the PORT environment variable).

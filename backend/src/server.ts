@@ -134,7 +134,7 @@ const mapToTrack = (raw: RawTrack): Track => {
 
 const fetchTracks = async (): Promise<Track[]> => {
   try {
-    const response = await fetch('https://musicfun.it-incubator.app/api/tracks')
+    const response = await fetch('https://musicfun.it-incubator.app/api/playlists/tracks')
 
     if (!response.ok) {
       return Object.values(TRACK_BASE)
@@ -148,7 +148,7 @@ const fetchTracks = async (): Promise<Track[]> => {
   }
 }
 
-app.get('/api/tracks', async (_req: Request, res: Response) => {
+app.get('/api/playlists/tracks', async (_req: Request, res: Response) => {
   const tracks = await fetchTracks()
 
   return res.json({

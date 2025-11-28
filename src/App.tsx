@@ -38,7 +38,7 @@ export function App() {
   useEffect(() => {
     const fetchTracks = async () => {
       try {
-        const response = await fetch('/api/tracks')
+        const response = await fetch('/api/playlists/tracks')
         const payload: TracksResponse = await response.json()
         setTracks(payload.data)
       } catch (error) {
