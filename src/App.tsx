@@ -30,7 +30,6 @@ type TrackResponse = {
 
 export function App() {
   const [tracks, setTracks] = useState<Track[] | null>(null)
-  const [activeTrackId, setActiveTrackId] = useState<string | null>(null)
   const [selectedTrack, setSelectedTrack] = useState<TrackDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
@@ -73,12 +72,10 @@ export function App() {
   }
 
   const handleSelectTrack = (trackId: string) => {
-    setActiveTrackId(trackId)
     loadTrackDetail(trackId)
   }
 
   const handleResetSelection = () => {
-    setActiveTrackId(null)
     setSelectedTrack(null)
     setDetailError(null)
   }
@@ -95,18 +92,15 @@ export function App() {
     return (
       <ul className="flex flex-col gap-2">
         {tracks.map(({ id, title, audioUrl }) => {
-          const isActive = id === activeTrackId
-
           return (
             <li
               key={id}
               role="button"
               tabIndex={0}
-              aria-pressed={isActive}
               aria-label={`Трек ${title}`}
               onClick={() => handleSelectTrack(id)}
               className={`rounded border p-3 transition focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                isActive ? 'bg-green-100' : 'bg-white hover:bg-gray-50'
+                id === selectedTrack?.id ? 'bg-green-100' : 'bg-white hover:bg-gray-50'
               }`}
             >
               <div className="flex flex-col gap-2">
@@ -121,7 +115,7 @@ export function App() {
   }
 
   const renderTrackDetail = () => {
-    if (!activeTrackId) {
+    if (selectedTrack === null) {
       return <div className="text-sm text-gray-500">Выберите трек, чтобы увидеть детали</div>
     }
 
@@ -209,9 +203,9 @@ export function App() {
           <button
             type="button"
             onClick={handleResetSelection}
-            disabled={!activeTrackId}
+            disabled={selectedTrack === null}
             className={`rounded px-3 py-2 text-sm font-medium transition ${
-              activeTrackId
+              selectedTrack
                 ? 'bg-indigo-600 text-white hover:bg-indigo-500'
                 : 'cursor-not-allowed bg-gray-100 text-gray-400'
             }`}
