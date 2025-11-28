@@ -32,8 +32,6 @@ export function App() {
   const [tracks, setTracks] = useState<Track[] | null>(null)
   const [activeTrackId, setActiveTrackId] = useState<string | null>(null)
   const [selectedTrack, setSelectedTrack] = useState<TrackDetail | null>(null)
-  const [detailLoading, setDetailLoading] = useState(false)
-  const [detailError, setDetailError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -51,9 +49,6 @@ export function App() {
   }, [])
 
   const loadTrackDetail = async (trackId: string) => {
-    setDetailLoading(true)
-    setDetailError(null)
-
     try {
       const response = await fetch(`/api/playlists/tracks/${trackId}`)
 
@@ -66,10 +61,7 @@ export function App() {
     } catch (error) {
       console.error('Error fetching track detail:', error)
       setSelectedTrack(null)
-      setDetailError('Не удалось загрузить информацию о треке')
-    } finally {
-      setDetailLoading(false)
-    }
+    } 
   }
 
   const handleSelectTrack = (trackId: string) => {
@@ -80,7 +72,6 @@ export function App() {
   const handleResetSelection = () => {
     setActiveTrackId(null)
     setSelectedTrack(null)
-    setDetailError(null)
   }
 
   const renderTrackList = () => {
@@ -122,12 +113,8 @@ export function App() {
       return <div className="text-sm text-gray-500">Выберите трек, чтобы увидеть детали</div>
     }
 
-    if (detailLoading) {
+    if (activeTrackId !== selectedTrack?.id) {
       return <div className="text-sm text-gray-500">Загрузка информации...</div>
-    }
-
-    if (detailError) {
-      return <div className="text-sm text-red-600">{detailError}</div>
     }
 
     if (!selectedTrack) {
