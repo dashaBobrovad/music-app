@@ -1,17 +1,12 @@
 import cors from 'cors'
 import express, { Request, Response } from 'express'
+import { sleep } from './helpers/sleep'
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(cors())
 app.use(express.json())
-
-type RawTrack = {
-  id: number
-  title: string
-  url: string
-}
 
 type Track = {
   id: string
@@ -112,40 +107,9 @@ const respondWithError = (
   })
 }
 
-const mapToTrack = (raw: RawTrack): Track => {
-  const nowIso = new Date().toISOString()
-  const base = TRACK_BASE[String(raw.id)]
-
-  return {
-    id: String(raw.id),
-    title: raw.title ?? base?.title ?? 'Unknown track',
-    durationMs: base?.durationMs ?? 0,
-    audioUrl: (raw.url ?? base?.audioUrl ?? '').trim(),
-    coverUrl: base?.coverUrl,
-    genre: base?.genre,
-    artistIds: base?.artistIds ?? [],
-    tagIds: base?.tagIds ?? [],
-    playlistIds: base?.playlistIds,
-    lyrics: base?.lyrics,
-    createdAt: base?.createdAt ?? nowIso,
-    updatedAt: nowIso,
-  }
-}
-
 const fetchTracks = async (): Promise<Track[]> => {
-  try {
-    const response = await fetch('https://musicfun.it-incubator.app/api/playlists/tracks')
-
-    if (!response.ok) {
-      return Object.values(TRACK_BASE)
-    }
-
-    const payload = (await response.json()) as RawTrack[]
-    return payload.map(mapToTrack)
-  } catch (error) {
-    console.error('Error fetching tracks:', error)
-    return Object.values(TRACK_BASE)
-  }
+  await sleep(1000) // задержка 1 секунда
+  return Object.values(TRACK_BASE)
 }
 
 app.get('/api/playlists/tracks', async (_req: Request, res: Response) => {
