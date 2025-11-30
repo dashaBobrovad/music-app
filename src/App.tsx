@@ -48,31 +48,25 @@ export function App() {
     fetchTracks()
   }, [])
 
-  const loadTrackDetail = async (trackId: string) => {
-    try {
-      const response = await fetch(`/api/playlists/tracks/${trackId}`)
+  useEffect(() => {
+    if(activeTrackId === null) {
+      setSelectedTrack(null);
+      return;
+    }
 
-      if (!response.ok) {
-        throw new Error('Failed to load track')
-      }
+    const fetchTrackDetail = async () => {
+      try {
+        const response = await fetch(`/api/playlists/tracks/${activeTrackId}`)  
+        const payload: TrackResponse = await response.json()
+        setSelectedTrack(payload.data)
+      } catch (error) {
+        console.error('Error fetching track detail:', error)
+        setSelectedTrack(null)
+      } 
+    }
 
-      const payload: TrackResponse = await response.json()
-      setSelectedTrack(payload.data)
-    } catch (error) {
-      console.error('Error fetching track detail:', error)
-      setSelectedTrack(null)
-    } 
-  }
-
-  const handleSelectTrack = (trackId: string) => {
-    setActiveTrackId(trackId)
-    loadTrackDetail(trackId)
-  }
-
-  const handleResetSelection = () => {
-    setActiveTrackId(null)
-    setSelectedTrack(null)
-  }
+    fetchTrackDetail();
+  }, [activeTrackId])
 
   const renderTrackList = () => {
     if (tracks === null) {
@@ -92,7 +86,7 @@ export function App() {
               role="button"
               tabIndex={0}
               aria-label={`Трек ${title}`}
-              onClick={() => handleSelectTrack(id)}
+              onClick={() => setActiveTrackId(id)}
               className={`rounded border p-3 transition focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 id === activeTrackId ? 'bg-green-100' : 'bg-white hover:bg-gray-50'
               }`}
@@ -192,7 +186,7 @@ export function App() {
 
           <button
             type="button"
-            onClick={handleResetSelection}
+            onClick={()=> setActiveTrackId(null)}
             disabled={!activeTrackId}
             className={`rounded px-3 py-2 text-sm font-medium transition ${
               activeTrackId
