@@ -39,6 +39,7 @@ export const TrackList = ({ activeTrackId, onSelectTrack }: TrackListProps) => {
     <ul className="flex flex-col gap-2">
       {tracks.map(({ id, title, audioUrl }) => (
         <TrackItem
+          key={id}
           id={id}
           title={title}
           audioUrl={audioUrl}
