@@ -52,7 +52,7 @@ export const HomePage = () => {
             Сбросить выбор
           </button>
         </div>
-        <TrackList activeTrackId={activeTrackId} handleSelectedTrack={handleSelectedTrack} />
+        <TrackList activeTrackId={activeTrackId} onSelectTrack={handleSelectedTrack} />
       </div>
 
       <div className="w-full rounded border bg-white p-4 shadow-sm md:w-1/3">
